@@ -15,7 +15,6 @@
 - **/docs (added next):** exact commands & screenshots for AD + RSAT + Wazuh  
 - **/screenshots (added next):** evidence for agents, vulns, and GPO checks
 
-> Secrets are redacted (`<REDACTED>`). Replace lab credentials before sharing screenshots/logs.
 
 ---
 
