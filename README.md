@@ -19,7 +19,7 @@
 
 ---
 
-## Build summary (condensed)
+## Build summary 
 1. **Samba AD on `dc01`**
    - Provisioned with `samba-tool domain provision --realm LAB.LOCAL --domain LAB --dns-backend=SAMBA_INTERNAL`
    - `/etc/krb5.conf` copied from Samba; resolver set to `127.0.0.1`
