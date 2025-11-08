@@ -1,44 +1,56 @@
-# Home Lab: Samba AD DC + Windows RSAT + Wazuh (single-host, KVM/libvirt)
+# Home Lab: Samba AD DC + Windows RSAT + Wazuh
 
-**Stack (final state)**  
-- Host: Ubuntu + libvirt/KVM (Cockpit VM plugin), NAT `virbr0` (192.168.122.0/24)
-- Core DC: `dc01` (Ubuntu Server, Samba AD DC) — **IP `192.168.122.5`**
-- Admin box: `mgmt01` (Windows 11 Pro, RSAT)  
-- Workstations: `ws02` (Windows 11), `ws01` (Ubuntu Desktop)  
-- SIEM: **Wazuh single-node (manager + indexer + dashboard v4.7.5)** via Docker
-- Agents: `mgmt01-agent`, `WIN01-Agent`, `DC01-Agent`, `WS02-Agent` (reinstalled clean)
+- Host: Ubuntu + libvirt/KVM (Cockpit), NAT virbr0 (192.168.122.0/24)
+- dc01: Samba AD DC (192.168.122.5) for LAB.LOCAL
+- mgmt01: Windows 11 Pro with RSAT
+- ws02: Windows 11 Pro (domain member)
+- ws01: Ubuntu Desktop (domain member)
+- Wazuh: single-node (manager + indexer + dashboard v4.7.5)
+- Agents: mgmt01-agent, WIN01-Agent, DC01-Agent, WS02-Agent
 
----
+## Build Summary
+1. Samba AD on dc01
+2. RSAT on mgmt01 + first GPO
+3. Wazuh single-node + agents
 
-## What this repo contains
-- **README:** high-level architecture + summary (this file)  
-- **/docs (added next):** exact commands & screenshots for AD + RSAT + Wazuh  
-- **/screenshots (added next):** evidence for agents, vulns, and GPO checks
+## Pitfalls
+- samba-ad-dc masked
+- old smb.conf blocking provision
+- DNS SERVFAIL until forwarder set
+- libvirt pool space (LVM)
+- agent purge via API
+## Requirements & Versions
+- Host OS: Ubuntu (libvirt/KVM, Cockpit)
+- Network: libvirt default NAT `virbr0` (192.168.122.0/24)
+- Domain: `LAB.LOCAL`
+- DC IP: `dc01` → **192.168.122.5**
+- Wazuh Dashboard: **v4.7.5**
+- Windows admin box: `mgmt01` (Windows 11 Pro with RSAT)
+
+## VM Inventory (final state)
+- `dc01` — Ubuntu Server, Samba AD DC (LAB.LOCAL), DNS forwarder → 1.1.1.1
+- `mgmt01` — Windows 11 Pro, RSAT (ADUC, DNS, GPMC)
+- `ws02` — Windows 11 Pro, joined to domain
+- `ws01` — Ubuntu Desktop, joined to domain
+
+## Status (checks)
+- AD DS online; SRV records resolve; Kerberos tickets issued (Administrator).
+- RSAT from `mgmt01` works; first GPO linked to `Workstations` OU.
+- Wazuh single-node running; Vulnerability Detector cycles complete.
+- Agents reporting: `mgmt01-agent`, `WIN01-Agent`, `DC01-Agent`, `WS02-Agent`.
+
+## Status (final)
+- AD DS online; SRV records resolve; Kerberos tickets issued (Administrator).
+- RSAT from `mgmt01` works; first GPO linked to `Workstations` OU.
+- Wazuh single-node running; Vulnerability Detector cycles complete.
+- Agents reporting: `mgmt01-agent`, `WIN01-Agent`, `DC01-Agent`, `WS02-Agent`.
+
+## Issues Resolved (during build)
+- `samba-ad-dc` was masked → unmasked and enabled.
+- Provision failed due to existing `/etc/samba/smb.conf` → moved and re-provisioned to regenerate.
+- DNS SERVFAIL on `dc01` → set Samba DNS forwarder to `1.1.1.1`.
+- Wazuh agent on `WS02` initially showed no SCA/vulns → purged via REST API with `purge=true&force=true`, then reinstalled.
+
+## Screenshots
 
 
----
-
-## Build summary 
-1. **Samba AD on `dc01`**
-   - Provisioned with `samba-tool domain provision --realm LAB.LOCAL --domain LAB --dns-backend=SAMBA_INTERNAL`
-   - `/etc/krb5.conf` copied from Samba; resolver set to `127.0.0.1`
-   - `dns forwarder = 1.1.1.1` in `/etc/samba/smb.conf`
-   - Verified: `_ldap._tcp`, `_kerberos._tcp`, `kinit Administrator`, `klist`
-
-2. **RSAT on `mgmt01`**
-   - Joined to `LAB.LOCAL` (NIC DNS → `dc01`)
-   - RSAT installed: `Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability -Online`
-   - Users: `jeremy` (Domain Admins + Helpdesk Admins), `lab.svc.wazuh`, `lab.svc.edr` (Domain Users)
-   - First GPO linked to a `Workstations` OU (logon banner test)
-
-3. **Wazuh single-node**
-   - `git clone https://github.com/wazuh/wazuh-docker.git && cd wazuh-docker/single-node`
-   - `docker compose -f generate-indexer-certs.yml run --rm generator && docker compose up -d`
-   - Verified Vulnerability Detector in `ossec.log` (“Analyzing… Finished”)
-   - Fixed WS02 by purging old agent via API (`?purge=true&force=true`), reinstalling
-
----
-
-## Next in this repo
-- Add `/docs/guide.md` with exact commands (AD, RSAT, Wazuh, agent purge)  
-- Add `/screenshots` and link them here
