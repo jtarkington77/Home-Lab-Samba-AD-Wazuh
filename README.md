@@ -52,5 +52,14 @@
 - Wazuh agent on `WS02` initially showed no SCA/vulns → purged via REST API with `purge=true&force=true`, then reinstalled.
 
 ## Screenshots
+![Cockpit VMs](./screenshots/01-cockpit-vms.png)
+![ADUC (RSAT) – LAB.LOCAL](./screenshots/02-rsat.aduc.png)
+![GPMC – Workstations OU + Baseline GPO](./screenshots/03-gpo.png)
+![Wazuh – Agents list](./screenshots/04-wazuh-agents.png)
+![Wazuh – DC01 vulnerabilities](./screenshots/05-wazuh-dc01-vulns.png)
+![Wazuh – WS01 SCA](./screenshots/06-wazuh-ws01-sca.png)
+![Windows – domain joined](./screenshots/07-win11-domain-joined.png)
+![Ubuntu – domain joined](./screenshots/08-ubuntu-domain-joined.png)
+
 
 
